@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GameBranch Condition="'$(GameBranch)' == ''">Beta</GameBranch>
+    <AssemblyName>SpireCoach.$(GameBranch)</AssemblyName>
+    <OutputPath>bin/$(Configuration)/$(GameBranch)/</OutputPath>
+    <IntermediateOutputPath>obj/$(Configuration)/$(GameBranch)/</IntermediateOutputPath>
+    <CompatDir>obj/$(Configuration)/$(GameBranch)/AlphaDefect</CompatDir>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
+  </PropertyGroup>
+  <Import Project="../build/AlphaDefect.props" />
+  <ItemGroup>
+    <CompilerVisibleProperty Include="GodotProjectDir" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
+    <PackageReference Include="Godot.SourceGenerators" Version="4.5.1" PrivateAssets="all" />
+    <Reference Include="sts2" HintPath="$(GameData)/sts2.dll" Private="false"/>
+    <Reference Include="GodotSharp" HintPath="$(GameData)/GodotSharp.dll" Private="false"/>
+    <Reference Include="0Harmony" HintPath="$(GameData)/0Harmony.dll" Private="false"/>
+    <Compile Remove="Entry.cs;loader/**/*.cs" />
+    <Compile Remove="ObservationCompatibility.cs" Condition="'$(GameBranch)' != 'Beta'" />
+    <Compile Remove="StableFormat28.cs" Condition="'$(GameBranch)' != 'Stable'" />
+    <Compile Include="$(EngineDir)/Engine/Observation*.cs;$(EngineDir)/Engine/Obs/**/*.cs;$(EngineDir)/Engine/Compat/*.cs;$(EngineDir)/Engine/Decision.cs;$(EngineDir)/Engine/Vocab.cs;$(EngineDir)/AgentCardSelector.cs" />
+    <Compile Remove="$(EngineDir)/Engine/Obs/Cards.cs;$(EngineDir)/Engine/Obs/Characters/Fool.cs;$(EngineDir)/Engine/Obs/Gains26.cs" Condition="'$(GameBranch)' == 'Beta'" />
+    <Compile Include="$(CompatDir)/Fool.cs;$(CompatDir)/Gains26.cs;$(CompatDir)/Cards.cs" Condition="'$(GameBranch)' == 'Beta'" />
+  </ItemGroup>
+  <Target Name="AdaptObservationSources" BeforeTargets="CoreCompile" Condition="'$(GameBranch)' == 'Beta'"
+          Inputs="$(EngineDir)/Engine/Obs/Characters/Fool.cs;$(EngineDir)/Engine/Obs/Gains26.cs;$(EngineDir)/Engine/Obs/Cards.cs;$(MSBuildProjectDirectory)/../build/adapt-observations.ps1"
+          Outputs="$(CompatDir)/Fool.cs;$(CompatDir)/Gains26.cs;$(CompatDir)/Cards.cs">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)/../build/adapt-observations.ps1&quot; -Source &quot;$(EngineDir)/Engine/Obs&quot; -Destination &quot;$(CompatDir)&quot;" />
+  </Target>
+</Project>

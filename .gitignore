@@ -1,0 +1,7 @@
+.deps/
+dist/
+workshop/content/
+bin/
+obj/
+__pycache__/
+*.pyc

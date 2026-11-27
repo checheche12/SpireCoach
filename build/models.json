@@ -1,0 +1,8 @@
+{
+  "ironclad": "ironclad_ema_v24782.pt",
+  "silent": "silent_ema_v26428.pt",
+  "defect": "student_e_v165018.pt",
+  "regent": "regent_student_e8.pt",
+  "necrobinder": "necrobinder_raw_v25875.pt",
+  "fool": "fool_ema_v24181.pt"
+}

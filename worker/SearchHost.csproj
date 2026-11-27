@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework><OutputType>Exe</OutputType>
+    <AssemblyName>SpireCoach.SearchHost</AssemblyName><StartupObject>SpireCoach.SearchHost</StartupObject>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <CompatDir>obj/$(Configuration)/SearchCompat</CompatDir>
+  </PropertyGroup>
+  <Import Project="../build/AlphaDefect.props" />
+  <ItemGroup>
+    <Compile Include="SearchHost.cs;CombatSearch.cs;InformationSetTree.cs;SearchFrame.cs;RolloutSearch.cs"/>
+    <Compile Condition="'$(SearchParity)' == 'true'" Include="../qa/search/WorldTrace.cs"/>
+    <Compile Include="$(EngineDir)/**/*.cs" Exclude="$(EngineDir)/obj/**;$(EngineDir)/bin/**;$(EngineDir)/Program.cs"/>
+    <Compile Condition="'$(GameBranch)' == 'Stable'" Include="../mod/StableFormat28.cs;$(Upstream)/engine/Sts2Headless/Engine/Clone/ClonePolicy.cs;$(Upstream)/engine/Sts2Headless/Engine/Clone/HeapSnapshot.cs;$(Upstream)/engine/Sts2Headless/Engine/Clone/TypeInit.cs"/>
+    <Compile Condition="'$(GameBranch)' == 'Beta'" Remove="$(EngineDir)/Engine/Obs/Characters/Fool.cs;$(EngineDir)/Engine/Obs/Gains26.cs;$(EngineDir)/Engine/Obs/Cards.cs"/>
+    <Compile Condition="'$(GameBranch)' == 'Beta'" Include="../mod/ObservationCompatibility.cs;$(CompatDir)/Fool.cs;$(CompatDir)/Gains26.cs;$(CompatDir)/Cards.cs"/>
+    <Compile Include="../mod/NativePolicy.cs;../mod/SearchProtocol.cs"/>
+    <Reference Include="Sts2SimServe" HintPath="$(Upstream)/game-v0.111.0/engine/Sts2SimServe/bin/Release/net9.0/Sts2SimServe.dll"/>
+    <Reference Include="Sts2Sim.Core" HintPath="$(Upstream)/game-v0.111.0/engine/Sts2SimServe/bin/Release/net9.0/Sts2Sim.Core.dll"/>
+    <Reference Include="sts2" HintPath="$(GameData)/sts2.dll" Private="false"/>
+    <Reference Include="GodotSharp" HintPath="$(GameData)/GodotSharp.dll" Private="false"/>
+    <Reference Include="0Harmony" HintPath="$(GameData)/0Harmony.dll" Private="false"/>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.22.1"/>
+  </ItemGroup>
+  <Target Name="AdaptObservations" BeforeTargets="CoreCompile" Condition="'$(GameBranch)' == 'Beta'">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)/../build/adapt-observations.ps1&quot; -Source &quot;$(EngineDir)/Engine/Obs&quot; -Destination &quot;$(CompatDir)&quot;"/>
+  </Target>
+</Project>

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net9.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="benchmark/**/*.cs;search/**/*.cs" />
+    <Reference Include="sts2" HintPath="$(GameData)/sts2.dll" Private="false"/>
+    <Reference Include="GodotSharp" HintPath="$(GameData)/GodotSharp.dll" Private="false"/>
+  </ItemGroup>
+</Project>

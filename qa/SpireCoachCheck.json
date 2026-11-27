@@ -1,0 +1,10 @@
+{
+  "id": "SpireCoachCheck",
+  "name": "SpireCoach internal QA",
+  "author": "SpireCoach",
+  "description": "Isolated QA session",
+  "version": "0.1.0",
+  "has_pck": false,
+  "has_dll": true,
+  "affects_gameplay": true
+}

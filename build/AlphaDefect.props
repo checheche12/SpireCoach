@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <EngineDir>$(Upstream)/engine/Sts2Headless</EngineDir>
+    <EngineDir Condition="'$(GameBranch)' == 'Stable'">$(Upstream)/game-v0.111.0/engine/Sts2Headless</EngineDir>
+    <EngineDir Condition="'$(GameBranch)' == 'Beta114'">$(Upstream)/game-v0.114.0/engine/Sts2Headless</EngineDir>
+    <DefineConstants Condition="'$(GameBranch)' == 'Stable'">$(DefineConstants);STS_STABLE</DefineConstants>
+    <DefineConstants Condition="'$(GameBranch)' == 'Beta114'">$(DefineConstants);STS_114</DefineConstants>
+  </PropertyGroup>
+</Project>

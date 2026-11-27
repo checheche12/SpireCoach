@@ -1,0 +1,11 @@
+{
+  "id": "SpireCoach",
+  "name": "첨탑 코치 · AlphaDefect",
+  "author": "SpireCoach",
+  "description": "전투, 길찾기, 이벤트, 카드 선택, 카드 보상, 포션 보상, 상점, 모닥불에서 AlphaDefect의 추천을 보여 주는 한국어 플레이 보조 모드.",
+  "version": "0.4.2",
+  "min_game_version": "0.111.1",
+  "has_pck": false,
+  "has_dll": true,
+  "affects_gameplay": false
+}

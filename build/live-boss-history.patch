@@ -1,0 +1,60 @@
+--- a/src/Sts2Sim.Core/Runs/RunState.Transplant.cs
++++ b/src/Sts2Sim.Core/Runs/RunState.Transplant.cs
+@@ -57,6 +57,9 @@
+         if (snapshot.CompletedActFloors < 0)
+             throw new TransplantMappingException("CompletedActFloors", "Floor count cannot be negative.");
+         _completedActFloors = snapshot.CompletedActFloors;
++        if (snapshot.ActIndex == 2 && targetRoomType == RoomType.Boss &&
++            snapshot.ExtraFields.TryGetValue("spirecoach_visible_map", out var publicMap))
++            Map = new VisibleActMap(publicMap, Map);
+         _visitedMapCoords.Clear();
+         if (snapshot.VisitedMapCoords is null)
+             throw new TransplantMappingException("VisitedMapCoords", "Missing map history.");
+--- a/src/Sts2Sim.Core/Runs/RunState.Transplant.cs
++++ b/src/Sts2Sim.Core/Runs/RunState.Transplant.cs
+@@ -116,6 +116,34 @@
+             catch (System.Text.Json.JsonException error)
+             { throw new TransplantMappingException("RoomProgress.VisitedEventIds", error.Message); }
+         }
++        // A running player's encounter history and the boss already on screen
++        // are public. New game versions and discovery profiles generate different
++        // room sequences from the same seed. Import only the revealed entries.
++        if (snapshot.ActIndex == 2 && targetRoomType == RoomType.Boss && !snapshot.IsInjected)
++        {
++            static EncounterDefinition Seen(IReadOnlyList<EncounterDefinition> pool, string id) =>
++                pool.FirstOrDefault(e => e.IdEntry == id) ??
++                throw new TransplantMappingException("RoomProgress", "Unsupported observed encounter: " + id);
++            static void RestorePast(List<EncounterDefinition> sequence, IReadOnlyList<EncounterDefinition> pool,
++                IReadOnlyList<string> seen)
++            {
++                for (int i = 0; i < seen.Count; i++)
++                {
++                    var encounter = Seen(pool, seen[i]);
++                    if (i >= sequence.Count) sequence.Add(encounter);
++                    else sequence[i] = encounter;
++                }
++            }
++            RestorePast(_normalEncounterSequence, Act.MonsterEncounterCandidates, progress.VisitedNormalEncounterIds);
++            RestorePast(_eliteEncounterSequence, Act.EliteEncounterCandidates, progress.VisitedEliteEncounterIds);
++            var current = Seen(Act.BossEncounterCandidates, progress.NextEncounterId!);
++            if (_bossEncountersVisited == 0) _bossEncounter = current;
++            else if (_bossEncountersVisited == 1 && progress.VisitedBossEncounterIds.Count == 1)
++            {
++                _bossEncounter = Seen(Act.BossEncounterCandidates, progress.VisitedBossEncounterIds[0]);
++                _secondBossEncounter = current;
++            }
++        }
+         ValidateEncounterHistory(progress.VisitedNormalEncounterIds, _normalEncounterSequence,
+             _normalEncountersVisited, "RoomProgress.VisitedNormalEncounterIds");
+         ValidateEncounterHistory(progress.VisitedEliteEncounterIds, _eliteEncounterSequence,
+--- a/src/Sts2Sim.Core/Runs/Transplant/RunTransplantImporter.cs
++++ b/src/Sts2Sim.Core/Runs/Transplant/RunTransplantImporter.cs
+@@ -96,6 +96,8 @@
+             string path = $"ExtraFields.{name}";
+             switch (name)
+             {
++                case "spirecoach_visible_map" when value.ValueKind == System.Text.Json.JsonValueKind.Object:
++                    break;
+                 case "started_with_neow":
+                     if (value.ValueKind != System.Text.Json.JsonValueKind.True)
+                         throw new TransplantMappingException(path,
